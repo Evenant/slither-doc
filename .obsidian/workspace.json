@@ -1,0 +1,146 @@
+{
+  "main": {
+    "id": "37a53436d1e47250",
+    "type": "split",
+    "children": [
+      {
+        "id": "d8f6dde1dcd5e5e5",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c52233468e903eac",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docgen.py.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "b5fdf5c4fef29a53",
+    "type": "split",
+    "children": [
+      {
+        "id": "f02d70dcbdc4328c",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "7569b5fe9b94ce41",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "3ee5a1314c2e69aa",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "2130ca562126c0c1",
+            "type": "leaf",
+            "state": {
+              "type": "starred",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "8a697bcc148a81d3",
+    "type": "split",
+    "children": [
+      {
+        "id": "793fd4f5f2551aa4",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "146a8727b294684a",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "docgen.py.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "a4c22e52dca26560",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "docgen.py.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "a59494567e37a3f4",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "0e0d75bfbc4d6932",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "docgen.py.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "ribbon": {
+    "mostRecentAction": ""
+  },
+  "active": "c52233468e903eac",
+  "lastOpenFiles": [
+    "Index.md"
+  ]
+}

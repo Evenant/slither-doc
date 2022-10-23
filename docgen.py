@@ -1,0 +1,179 @@
+from genericpath import isdir, isfile
+import os
+import docgen_config as cfg
+### An extremely simple way to generate markdown documentation
+### Uses nothing else other than the Python 3.10.8 Standard Library
+		
+# This represents a single file to be documented
+class document_obj:
+	__extension:str = ""
+	__filepath:str = ""
+	__md_filepath:str = ""
+	__soft_keyword:str = ""
+	__hard_keyword:str = ""
+
+	__docgen_props:str = "\n\n# SlitherDoc Properties\nThis Document was generated using [SlitherDoc](), this is the configuration for this document.\n"
+	def __init__(self, filepath:str) -> None:
+		self.__filepath = filepath
+		if self.__filepath.startswith("./"):
+			self.__filepath = self.__filepath[2:]
+		self.__md_filepath = filepath + ".md"
+		comment = ""
+		if "." not in filepath.split("/")[-1]:
+			raise Exception("Cannot document extension-less files")
+		else:
+			self.__extension = filepath.split("/")[-1].split(".")[-1]
+			for i in cfg.GEN_EXT:
+				if i[0] == self.__extension:
+					comment = i[1]
+			if comment == "":
+				raise Exception(f"No GEN_EXT comment type matches {filepath.split('/')[-1]}")
+			
+		if comment == "hash" or comment == "#":
+			self.__soft_keyword = "#"
+			self.__hard_keyword = "###"
+		elif comment == "slash" or comment == "/":
+			self.__soft_keyword = "/"
+			self.__hard_keyword = "///"
+		elif comment == "dash" or comment == "-":
+			self.__soft_keyword = "-"
+			self.__hard_keyword = "---"
+		else:
+			raise Exception("You need to provide a comment type for a document_obj:\n\"hash\" or \"#\" for Hash Comments\n\"slash\" or \"/\" for Slash comments\n\"dash\" or \"-\" for Dash comments")
+		print(f"{self.__filepath} is using {self.__soft_keyword} and {self.__hard_keyword}")
+		self.__docgen_props += f"Source Path: {self.__filepath}\n"
+		self.__docgen_props += "Comment Type: " + f"( {self.__soft_keyword}" + f" {self.__hard_keyword} )"
+	
+
+	
+	# Creates a markdown file that documents things in the source file
+	def markdownify(self) -> str:
+		print(f"Markdownifying {self.__filepath}")
+		
+		code_comment:str = self.__hard_keyword + "c"
+		srcfile = open(self.__filepath, "rt")
+		docfile = open(self.__md_filepath,"wt")
+		is_prevline_comment:bool = False
+		is_prevline_code:bool = False
+		for fline in srcfile.readlines():
+			soft_keycount:int = 0
+			if code_comment in fline:
+				if is_prevline_code:
+					docfile.write(f"{fline.replace(code_comment,'')}")
+				else:
+					is_prevline_code = True
+					docfile.write(f"```{self.__extension}\n{fline.replace(code_comment,'')}")
+				continue
+
+			elif code_comment not in fline:
+				if is_prevline_code:
+					is_prevline_code = False
+					docfile.write("```\n")
+			elif self.__hard_keyword not in fline:
+				if is_prevline_comment:
+					is_prevline_comment = False
+					docfile.write("\n")
+				continue
+
+			is_whitespace =True
+			for c in fline:
+				if soft_keycount == 3:
+					if is_whitespace and c != " ":
+						is_whitespace = False
+					if is_whitespace == False:
+						docfile.write(c)
+				elif c == self.__soft_keyword:
+					soft_keycount += 1
+				else:
+					soft_keycount = 0
+			
+			is_prevline_comment = True
+		srcfile.close()
+		docfile.write(self.__docgen_props)
+		docfile.close()
+		return self.__md_filepath
+
+class index_obj:
+	is_valid:bool = True
+	__indexes:list = []
+	__doc_objs:list[document_obj] = []
+	__self_index:str = ""
+
+	def __init__(self,path:str = "") -> None:
+		if path.startswith("./"):path = path[1:];path = path[1:]
+		elif path == "": path = "."
+		if path in cfg.GEN_IGNORE_DIRS: self.is_valid = False;return None
+
+		self.__self_index = path
+		os.chdir(path.split("/")[-1])
+		
+		print(f"Dir {path}")
+		currentdir = os.listdir()
+		self.__self_index += "/" +"Index.md"
+		for f_or_d in currentdir:
+			if isdir(f_or_d):
+				self.__indexes.append(index_obj(path + "/" + f_or_d))
+			if isfile(f_or_d):
+				if f_or_d.endswith(cfg.GEN_EXT_IGNORE) == False:
+					self.__doc_objs.append(document_obj(path + "/" + f_or_d))
+		for index, obj in enumerate(self.__indexes):
+			if obj.is_valid ==False:
+				self.__indexes.pop(index)
+		
+		print(os.getcwd())
+		os.chdir("..")
+	def markdownify(self) -> str:
+		indexfile = open(self.__self_index,"wt")
+		for d in self.__doc_objs:
+			indexfile.write(d.markdownify() + "\n")
+		for i in self.__indexes:
+			indexfile.write(i.markdownify() + "\n")
+		indexfile.close()
+		return self.__self_index
+
+		
+# A recursive function that returns a list of file paths
+def get_files(path = "")->list[str]:
+	if path.startswith("./"):
+		path = path[1:]
+		path = path[1:]
+	if path == "":
+		path = "."
+	elif path in cfg.GEN_IGNORE_DIRS:
+		return []
+	
+	# Returns an empty list if it finds out that this directory is not allowed
+	if path in cfg.GEN_IGNORE_DIRS:
+		return []
+
+	f = open("Index.md","wt")
+	f.close()
+	listed = os.listdir(path.split("/")[-1])
+	files:list[str] = []
+
+	os.chdir(path.split("/")[-1])
+	fi = open("Index.md","wt")
+	fi.write(f"# SlitherDoc Index file\nThis is an index of the current directory ({path}) automatically generated by SlitherDoc\n")
+	if "README.md" in listed:
+		fi.write("Please read this [README](README.md) before continuing\n")
+	# is it a file or directory?
+	for f_or_d in listed:
+		if isfile(f_or_d):
+			if f_or_d.endswith(tuple(cfg.GEN_EXT_IGNORE)) == False:
+				files.append(path + "/" + f_or_d)
+				fi.write(f"- [{f_or_d}]({f_or_d + '.md'})\n")
+
+		if isdir(f_or_d):
+			print("Dir " + path)
+			nextdir = get_files(path + "/"+ f_or_d)
+			if nextdir != []:fi.write(f"- [{f_or_d}]({f_or_d + '/Index.md'}) directory\n")
+			for f in nextdir:
+				files.append(f)
+	if path != ".":
+		os.chdir("..")
+	
+	fi.close()
+	return files
+
+for f in get_files():
+	document_obj(f).markdownify()

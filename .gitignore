@@ -1,0 +1,6 @@
+vscode.bat
+__pycache__
+.vscode
+*.md
+!/README.md
+lookan-py
