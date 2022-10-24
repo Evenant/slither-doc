@@ -1,4 +1,5 @@
 from genericpath import isdir, isfile
+from operator import index
 import os
 import docgen_config as cfg
 ### An extremely simple way to generate markdown documentation
@@ -11,8 +12,9 @@ class document_obj:
 	__md_filepath:str = ""
 	__soft_keyword:str = ""
 	__hard_keyword:str = ""
+	__has_ext = True
 
-	__docgen_props:str = "\n\n# SlitherDoc Properties\nThis Document was generated using [SlitherDoc](), this is the configuration for this document.\n"
+	__docgen_props:str = "\n\n# SlitherDoc Properties\nThis Document was generated using [SlitherDoc]()\n"
 	def __init__(self, filepath:str) -> None:
 		self.__filepath = filepath
 		if self.__filepath.startswith("./"):
@@ -20,7 +22,8 @@ class document_obj:
 		self.__md_filepath = filepath + ".md"
 		comment = ""
 		if "." not in filepath.split("/")[-1]:
-			raise Exception("Cannot document extension-less files")
+			self.__has_ext = False
+			return None
 		else:
 			self.__extension = filepath.split("/")[-1].split(".")[-1]
 			for i in cfg.GEN_EXT:
@@ -40,7 +43,6 @@ class document_obj:
 			self.__hard_keyword = "---"
 		else:
 			raise Exception("You need to provide a comment type for a document_obj:\n\"hash\" or \"#\" for Hash Comments\n\"slash\" or \"/\" for Slash comments\n\"dash\" or \"-\" for Dash comments")
-		print(f"{self.__filepath} is using {self.__soft_keyword} and {self.__hard_keyword}")
 		self.__docgen_props += f"Source Path: {self.__filepath}\n"
 		self.__docgen_props += "Comment Type: " + f"( {self.__soft_keyword}" + f" {self.__hard_keyword} )"
 	
@@ -48,8 +50,8 @@ class document_obj:
 	
 	# Creates a markdown file that documents things in the source file
 	def markdownify(self) -> str:
-		print(f"Markdownifying {self.__filepath}")
-		
+		if self.__has_ext == False:
+			return ""
 		code_comment:str = self.__hard_keyword + "c"
 		srcfile = open(self.__filepath, "rt")
 		docfile = open(self.__md_filepath,"wt")
@@ -69,7 +71,7 @@ class document_obj:
 				if is_prevline_code:
 					is_prevline_code = False
 					docfile.write("```\n")
-			elif self.__hard_keyword not in fline:
+			if self.__hard_keyword not in fline:
 				if is_prevline_comment:
 					is_prevline_comment = False
 					docfile.write("\n")
@@ -92,44 +94,6 @@ class document_obj:
 		docfile.write(self.__docgen_props)
 		docfile.close()
 		return self.__md_filepath
-
-class index_obj:
-	is_valid:bool = True
-	__indexes:list = []
-	__doc_objs:list[document_obj] = []
-	__self_index:str = ""
-
-	def __init__(self,path:str = "") -> None:
-		if path.startswith("./"):path = path[1:];path = path[1:]
-		elif path == "": path = "."
-		if path in cfg.GEN_IGNORE_DIRS: self.is_valid = False;return None
-
-		self.__self_index = path
-		os.chdir(path.split("/")[-1])
-		
-		print(f"Dir {path}")
-		currentdir = os.listdir()
-		self.__self_index += "/" +"Index.md"
-		for f_or_d in currentdir:
-			if isdir(f_or_d):
-				self.__indexes.append(index_obj(path + "/" + f_or_d))
-			if isfile(f_or_d):
-				if f_or_d.endswith(cfg.GEN_EXT_IGNORE) == False:
-					self.__doc_objs.append(document_obj(path + "/" + f_or_d))
-		for index, obj in enumerate(self.__indexes):
-			if obj.is_valid ==False:
-				self.__indexes.pop(index)
-		
-		print(os.getcwd())
-		os.chdir("..")
-	def markdownify(self) -> str:
-		indexfile = open(self.__self_index,"wt")
-		for d in self.__doc_objs:
-			indexfile.write(d.markdownify() + "\n")
-		for i in self.__indexes:
-			indexfile.write(i.markdownify() + "\n")
-		indexfile.close()
-		return self.__self_index
 
 		
 # A recursive function that returns a list of file paths
@@ -164,7 +128,6 @@ def get_files(path = "")->list[str]:
 				fi.write(f"- [{f_or_d}]({f_or_d + '.md'})\n")
 
 		if isdir(f_or_d):
-			print("Dir " + path)
 			nextdir = get_files(path + "/"+ f_or_d)
 			if nextdir != []:fi.write(f"- [{f_or_d}]({f_or_d + '/Index.md'}) directory\n")
 			for f in nextdir:
@@ -176,4 +139,29 @@ def get_files(path = "")->list[str]:
 	return files
 
 for f in get_files():
-	document_obj(f).markdownify()
+	mdfilepath = document_obj(f).markdownify()
+	is_there_index = False
+	if cfg.MARKDOWN_DIR != "":
+		dirpath = mdfilepath
+		while dirpath[-1] != "/":
+			dirpath = dirpath[:-1]
+		index_path = dirpath+"Index.md"
+		if isfile(index_path):
+			is_there_index = True
+
+		dirpath = cfg.MARKDOWN_DIR + "/" + dirpath
+		if not os.path.exists(dirpath):
+			os.makedirs(dirpath)
+		old_mdf = open(mdfilepath)
+		new_mdf =open(cfg.MARKDOWN_DIR +"/"+ mdfilepath,"wt")
+		new_mdf.write(old_mdf.read())
+		old_mdf.close()
+		new_mdf.close()
+		os.remove(mdfilepath)
+		if is_there_index:
+			old_index =open(index_path)
+			new_index = open(cfg.MARKDOWN_DIR + "/" + index_path,"wt")
+			new_index.write(old_index.read())
+			old_index.close()
+			new_index.close()
+			os.remove(index_path)
