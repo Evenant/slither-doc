@@ -1,6 +1,10 @@
 vscode.bat
 __pycache__
 .vscode
+.obsidian
 *.md
-!/README.md
+*.html
+!README.html
+!README.md
 lookan-py
+docs
