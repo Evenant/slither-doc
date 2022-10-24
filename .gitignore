@@ -1,7 +1,7 @@
 vscode.bat
 __pycache__
-.vscode
-.obsidian
+.vscode/
+.obsidian/
 *.md
 *.html
 !README.html
