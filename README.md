@@ -7,7 +7,8 @@ For example, `library.c` would have a `library.c.md` file in the same directory,
 Most programming languages use slashes( / ), hashes( # ) or dashes( - ) for single line comments, so SlitherDoc uses exactly that, keyword is "Most", so if your programming language does not use the above for single line comments, im very sorry.
 
 # How to use
-You only need to edit `docgen_config.py` to do something cool with SlitherDoc
+Look into `docgen_config.py` to learn how to use this generator
+
 
 # Credits
 [trentm](https://github.com/trentm/python-markdown2) for `markdown2.py`
