@@ -72,7 +72,7 @@ generator to ignore deps/extlib, but not to ignore deps
 There is always gonna be filetypes that never need to be documented, like executables, plain text
 and even Markdown files.
 GEN_EXT_IGNORE = (
-	'md',
+	'md', # Always make usre you have this
 	'html',
 	'exe',
 	'bat',
@@ -98,9 +98,8 @@ If your project is based on web development and you NEED the html, add an except
 that contains the html files your website needs:
 !my_website/*.html
 
-Make sure that GEN_IGNORE_DIRS has a "my_website" value aswell
-
 The above will NOT ignore the html files in the 'my_website' directory.
+Make sure that GEN_IGNORE_DIRS has a "my_website" value aswell
 
 Your project structure doubles as a documentation site, all that the users of your software
 need to do in order to view the project documentation is run 'python docgen.py', no need for a
